@@ -1,6 +1,8 @@
 import BabelRootImportHelper from './helper';
+import Path from 'path';
+import slash from 'slash';
 
-export default function() {
+export default function () {
   class BabelRootImport {
     constructor() {
       return {
@@ -24,7 +26,13 @@ export default function() {
             }
 
             if (BabelRootImportHelper().hasRootPathPrefixInString(defaultPath, rootPathPrefix)) {
-              path.node.source.value = BabelRootImportHelper().transformRelativeToRootPath(defaultPath, rootPathSuffix, rootPathPrefix);
+              const sourceDirectory = Path.dirname(state.file.opts.filename);
+              const importPath = BabelRootImportHelper().transformRelativeToRootPath(defaultPath, rootPathSuffix, rootPathPrefix);
+              let relativePath = slash(Path.relative(sourceDirectory, importPath));
+              if (relativePath[0] !== '.')
+                relativePath = './' + relativePath;
+
+              path.node.source.value = relativePath;
             }
           }
         }
